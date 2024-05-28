@@ -44,6 +44,7 @@ def channel_data(channel_id):
     Playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
     return data, Playlist_id
 
+
 #--------------------CHANNEL-DATA-WITH-SQL-----------------
 def channel_data_with_sql(channel_id):
     request = youtube.channels().list(
@@ -64,6 +65,7 @@ def channel_data_with_sql(channel_id):
     mycursor.execute(query, (data["channel_name"], data["channel_id"], data["channel_dec"],
                              data["channel_playlistid"], data["channel_viewc"], data["channel_subc"]))
     return data, Playlist_id
+
 
 #-----------------------PLAYLIST-DATA-----------------------
 def playlist_data(channel_id):
@@ -124,10 +126,12 @@ def video_data(playlist_id):
         videodetails.append(v)
     return videodetails, vid
 
+
 #----------------PARSING-DURATION-IN-SECONDS----------------
 def parse_duration(iso_duration):
     duration = isodate.parse_duration(iso_duration)
     return int(duration.total_seconds())
+
 
 #----------------------COMMENT-DATA-------------------------
 def comment_data(video_ids):
@@ -238,6 +242,7 @@ def data_harvesting_page():
     except:
         st.error("Error Occurred!!!")
 
+
 #--------------------DATA-WAREHOUSING-PAGE-------------------
 def data_warehousing_page():
     st.title("Data Warehousing")
@@ -271,6 +276,7 @@ def data_warehousing_page():
             data_gif = base64.b64encode(contents).decode("utf-8")
             file.close()
             st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >',unsafe_allow_html=True)
+
 
 #---------------CHECK-FOR-DUPLICATION-ENTRY------------------
 def is_inserted(channel):
