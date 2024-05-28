@@ -11,9 +11,9 @@ Building a Streamlit application for accessing data from multiple YouTube channe
 5. Youtube Data API V3
    
 # Approach
-1. User-Friendly Interface: Provides an intuitive interface for entering YouTube channel IDs, viewing channel details, and selecting channels for migration.
-2. Homepage Information: Displays information about the technical stack used and details about the application.
-3. YouTube API Integration: Connects to the YouTube API V3 to retrieve channel, video, playlist, and comments data using the Google API client library for Python.
-4. Data Harvesting: Offers insights into channel data on the Data Harvesting Page.
-5. Data Migration: Transfers selected channels' data, including playlists, videos, and comments, into a MySQL warehouse on the Data Warehouse page.
-6. Application Closure: Provides a simple way to close the application after use.
+1. **User-Friendly Interface:** Provides an intuitive interface for entering YouTube channel IDs, viewing channel details, and selecting channels for migration.
+2. **Homepage Information:** Displays information about the technical stack used and details about the application.
+3. **YouTube API Integration:** Connects to the YouTube API V3 to retrieve channel, video, playlist, and comments data using the Google API client library for Python.
+4. **Data Harvesting:** Offers insights into channel data on the Data Harvesting Page.
+5. **Data Migration:** Transfers selected channels' data, including playlists, videos, and comments, into a MySQL warehouse on the Data Warehouse page.
+6. **Application Closure:** Provides a simple way to close the application after use.
