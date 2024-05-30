@@ -214,78 +214,124 @@ def homepage():
     with col2:
         st.write("[Sai Pavan TM](https://www.linkedin.com/in/saipavantm/)")
 
-
 #--------------------DATA-HARVESTING-PAGE-------------------
 def data_harvesting_page():
     try:
         st.title("Data Harvesting")
         st.write("Enter a YouTube channel ID to fetch its details:")
-        channel_id = st.text_input("Enter Channel ID")
+
+        # Initialize session state variables if they don't exist
+        if 'channel_id' not in st.session_state:
+            st.session_state['channel_id'] = ''
+        if 'data_fetched' not in st.session_state:
+            st.session_state['data_fetched'] = False
+        if 'c_data' not in st.session_state:
+            st.session_state['c_data'] = {}
+        if 'p_id' not in st.session_state:
+            st.session_state['p_id'] = ''
+        
+        st.session_state.channel_id = st.text_input("Enter Channel ID", st.session_state.channel_id)
+        
         if st.button("Fetch Details"):
-            c_data, p_id = channel_data(channel_id)
-            st.subheader("Channel Details")
-            channel_info = youtube.channels().list(part='snippet', id=channel_id).execute()
-            thumbnail_url = channel_info['items'][0]['snippet']['thumbnails']['default']['url']
-            st.image(thumbnail_url, width=250)
-            st.write(f"<font color='blue'>**Channel Name :**</font> {c_data['channel_name']}", unsafe_allow_html=True)
-            st.write(f"<font color='blue'>**Channel ID :**</font> {c_data['channel_id']}", unsafe_allow_html=True)
-            st.write(f"<font color='blue'>**Channel Description :**</font> {c_data['channel_dec']}", unsafe_allow_html=True)
-            st.write(f"<font color='blue'>**Channel Playlist ID :**</font> {c_data['channel_playlistid']}", unsafe_allow_html=True)
-            st.write(f"<font color='blue'>**Channel View Count :**</font> {c_data['channel_viewc']}", unsafe_allow_html=True)
-            st.write(f"<font color='blue'>**Channel Subscriber Count :**</font> {c_data['channel_subc']}", unsafe_allow_html=True)
-            st.success("Data Fetched Successfully!!!")
-            file = open("C:/Users/saipa/Downloads/as.gif", "rb")
-            contents = file.read()
-            data_gif = base64.b64encode(contents).decode("utf-8")
-            file.close()
-            st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >',unsafe_allow_html=True)
-    except:
-        st.error("Error Occurred!!!")
+            if is_inserted(st.session_state.channel_id):
+                st.session_state.data_fetched = True
+                st.success("Data Fetched Successfully!!!")
+                st.session_state.c_data, st.session_state.p_id = channel_data_with_sql(st.session_state.channel_id)
+            else:
+                st.warning("Data for the selected channel is already inserted")
+        
+        if st.session_state.data_fetched:
+            selected_data = st.sidebar.radio("Select data you want to View", ["Channel Data", "Video Data", "Playlist Data", "Comments Data"])
+            
+            if selected_data == "Channel Data":
+                st.subheader("Channel Details")
+                channel_info = youtube.channels().list(part='snippet', id=st.session_state.channel_id).execute()
+                thumbnail_url = channel_info['items'][0]['snippet']['thumbnails']['default']['url']
+                st.image(thumbnail_url, width=250)
 
-
-#--------------------DATA-WAREHOUSING-PAGE-------------------
-def data_warehousing_page():
-    st.title("Data Warehousing")
-    channel_ids = {
-        "GUVI":"UCduIoIMfD8tT3KoU0-zBRgQ",
-        "JIOCINEMA":"UC8To9CFsZzvPafxMLzS08iA",
-        "TIMES NOW":"UC6RJ7-PaXg6TIH2BzZfTV7w",
-        "TV9 TELUGU":"UCPXTXMecYqnRKNdqdVOGSFg",
-        "NEWS18 INDIA":"UCPP3etACgdUWvizcES1dJ8Q",
-        "KOLKATA NIGHT RIDERS":"UCp10aBPqcOeBbEg7d_K9SBw",
-        "PRIME VIDEO":"UC4zWG9LccdWGUlF77LZ8toA",
-        "ZEE5":"UCXOgAl4w-FQero1ERbGHpXQ",
-        "STAR SPORTS":"UCmqfX0S3x0I3uwLkPdpX03w"
-
-    }
-    selected_channel = st.selectbox("Select any channel", ["GUVI", "JIOCINEMA", "TIMES NOW", "TV9 TELUGU", "STAR SPORTS",
-                                                           "NEWS18 INDIA","ZEE5", "KOLKATA NIGHT RIDERS","PRIME VIDEO"])
-    if st.button("Insert Data"):
-        if is_inserted(channel_ids[selected_channel]):
-            st.warning("Data for selected channel is already inserted")
-        else:
-            ply_data = playlist_data(channel_ids[selected_channel])
-            st.success("Playlist Data Inserted Successfully!!!")
-            c_data, p_id = channel_data_with_sql(channel_ids[selected_channel])
-            video_det, video_i = video_data(p_id)
-            st.success("Video Data Inserted Successfully!!!")
-            comm = comment_data(video_i)
-            st.success("Comments Data Inserted Successfully!!!")
-            file = open("C:/Users/saipa/Downloads/as.gif", "rb")
-            contents = file.read()
-            data_gif = base64.b64encode(contents).decode("utf-8")
-            file.close()
-            st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >',unsafe_allow_html=True)
+                st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Channel Name:</p> {st.session_state.c_data['channel_name']} ", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Channel ID:</p> {st.session_state.c_data['channel_id']} ", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Channel Description:</p> {st.session_state.c_data['channel_dec']} ", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Channel Playlist ID:</p> {st.session_state.c_data['channel_playlistid']} ", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Channel View Count:</p> {st.session_state.c_data['channel_viewc']} ", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Channel Subscriber Count:</p> {st.session_state.c_data['channel_subc']}", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                file = open("C:/Users/saipa/Downloads/as.gif", "rb")
+                contents = file.read()
+                data_gif = base64.b64encode(contents).decode("utf-8")
+                file.close()
+                st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >', unsafe_allow_html=True)
+            
+            elif selected_data == "Video Data":
+                st.subheader("Video Details")
+                video_det, video_i = video_data(st.session_state.p_id)
+                for video in video_det:
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Video ID:</p> {video['id']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Title:</p> {video['Videotitle']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Description:</p> {video['description']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Published Date:</p> {video['Published_Date']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>View Count:</p> {video['viewcount']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Like Count:</p> {video['likeCount']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Dislike Count:</p> {video['dislikeCount']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Favorite Count:</p> {video['favoriteCount']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Comment Count:</p> {video['commentcount']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Duration:</p> {video['duration']} seconds", unsafe_allow_html=True)
+                    st.write("---")
+                file = open("C:/Users/saipa/Downloads/as.gif", "rb")
+                contents = file.read()
+                data_gif = base64.b64encode(contents).decode("utf-8")
+                file.close()
+                st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >', unsafe_allow_html=True)
+            
+            elif selected_data == "Playlist Data":
+                st.subheader("Playlist Details")
+                playlist_details = playlist_data(st.session_state.channel_id)
+                for playlist in playlist_details:
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Playlist ID:</p> {playlist['playlistid']} |", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Playlist Name:</p> {playlist['playlistname']}", unsafe_allow_html=True)
+                    st.write("---")
+                file = open("C:/Users/saipa/Downloads/as.gif", "rb")
+                contents = file.read()
+                data_gif = base64.b64encode(contents).decode("utf-8")
+                file.close()
+                st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >', unsafe_allow_html=True)
+            
+            elif selected_data == "Comments Data":
+                st.subheader("Comment Details")
+                video_ids = [video['id'] for video in video_data(st.session_state.p_id)[0]]
+                comment_details = comment_data(video_ids)
+                for comment in comment_details:
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Video ID:</p> {comment['videoid']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Comment ID:</p> {comment['comment_id']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Comment Text:</p> {comment['Comment_Text']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Comment Author:</p> {comment['Comment_Author']} ", unsafe_allow_html=True)
+                    st.markdown(f"<p style='color:blue; font-weight:bold; display: inline;'>Comment PublishedAt:</p> {comment['Comment_PublishedAt']}", unsafe_allow_html=True)
+                    st.write("---")
+                file = open("C:/Users/saipa/Downloads/as.gif", "rb")
+                contents = file.read()
+                data_gif = base64.b64encode(contents).decode("utf-8")
+                file.close()
+                st.markdown(f'<img src="data:image/gif;base64,{data_gif}" style="width: 300px;" >', unsafe_allow_html=True)
+            
+            else:
+                st.error("Incorrect Option Chosen!!!")
+    except Exception as e:
+        st.error(f"Error Occurred: {str(e)}")
 
 
 #---------------CHECK-FOR-DUPLICATION-ENTRY------------------
 def is_inserted(channel):
-    mycursor.execute("SELECT DISTINCT channel_id FROM playlist")
+    mycursor.execute("SELECT DISTINCT channel_id FROM channel")
     c_ids = [row[0] for row in mycursor.fetchall()]
     for i in c_ids:
         if channel==i:
-            return True
-    return False
+            return False
+    return True
 
 
 #------------------------1st-QUERY---------------------------
@@ -441,19 +487,15 @@ def query_part():
             st.write("No results found.")
 
         mycon.close()
-
-
 #-----------------------MAIN-FUNCTION--------------------------
 def main():
     st.sidebar.title("Navigation")
-    app_mode = st.sidebar.radio("Go to", ("Homepage", "Data Harvesting", "Data Warehousing", "Query Part"))
+    app_mode = st.sidebar.radio("Go to", ("Homepage", "Data Harvesting", "Query Part"))
 
     if app_mode == "Homepage":
         homepage()
     elif app_mode == "Data Harvesting":
         data_harvesting_page()
-    elif app_mode == "Data Warehousing":
-        data_warehousing_page()
     elif app_mode == "Query Part":
         query_part()
 
